@@ -54,8 +54,24 @@ describe('calcDay – spejler Excel-formlerne', () => {
     expect(c.profit).toBe(50 * 65 - 3000)
   })
 
-  it('markerer manglende overførsel når der er solgte billetter uden dato', () => {
-    const c = calcDay(day({ hd_tickets: 10, ee_tickets: 5 }), settings)
+  it('ikke-fælles dag medregner hverken indtægt, udgift eller billetter', () => {
+    const c = calcDay(
+      day({ ee_need: true, ee_tickets: 20, hd_tickets: 5 }),
+      settings,
+    )
+    expect(c.shared).toBe(false)
+    expect(c.busExpense).toBe(0)
+    expect(c.income).toBe(0)
+    expect(c.ticketCount).toBe(0)
+    expect(c.profit).toBe(0)
+    expect(c.hdMissing).toBe(false)
+  })
+
+  it('markerer manglende overførsel når der er solgte billetter uden dato (kun på fælles dage)', () => {
+    const c = calcDay(
+      day({ hd_need: true, ee_need: true, hd_tickets: 10, ee_tickets: 5 }),
+      settings,
+    )
     expect(c.hdMissing).toBe(true)
     expect(c.eeMissing).toBe(true)
   })
@@ -63,6 +79,8 @@ describe('calcDay – spejler Excel-formlerne', () => {
   it('ingen manglende overførsel når dato er registreret', () => {
     const c = calcDay(
       day({
+        hd_need: true,
+        ee_need: true,
         hd_tickets: 10,
         hd_transferred_date: '2026-08-10',
         ee_tickets: 0,

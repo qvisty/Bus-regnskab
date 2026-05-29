@@ -31,12 +31,17 @@ export function calcDay(day: PlanningDay, settings: Settings): DayCalc {
   const shared = needCount > 1
   const busModel = shared ? 'Stor' : ''
   const busExpense = shared ? settings.bus_price : 0
-  const ticketCount =
-    (day.he_tickets || 0) + (day.hd_tickets || 0) + (day.ee_tickets || 0)
-  const income = ticketCount * settings.ticket_price
+  // Billetter, indtægt og udgift tæller kun på dage med fælles kørsel.
+  // Er det ikke en fælles dag, deles der intet mellem skolerne.
+  const ticketCount = shared
+    ? (day.he_tickets || 0) + (day.hd_tickets || 0) + (day.ee_tickets || 0)
+    : 0
+  const income = shared ? ticketCount * settings.ticket_price : 0
   const profit = income - busExpense
-  const hdMissing = (day.hd_tickets || 0) > 0 && !day.hd_transferred_date
-  const eeMissing = (day.ee_tickets || 0) > 0 && !day.ee_transferred_date
+  const hdMissing =
+    shared && (day.hd_tickets || 0) > 0 && !day.hd_transferred_date
+  const eeMissing =
+    shared && (day.ee_tickets || 0) > 0 && !day.ee_transferred_date
   return {
     needCount,
     shared,

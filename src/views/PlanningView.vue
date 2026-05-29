@@ -2,17 +2,9 @@
 import { computed, ref } from 'vue'
 import { useStore } from '@/store'
 import { calcDay, calcTotals } from '@/lib/calc'
-import type { PlanningDay } from '@/types'
-import {
-  weekdayShort,
-  isoWeek,
-  isWeekend,
-  monthName,
-  money,
-  dateShort,
-  parseISO,
-} from '@/lib/format'
+import { monthName, money, parseISO } from '@/lib/format'
 import { planningToCsv, downloadCsv } from '@/lib/csv'
+import PlanningRow from '@/components/PlanningRow.vue'
 
 const store = useStore()
 
@@ -81,24 +73,16 @@ function isMonthStart(date: string, index: number): boolean {
   const prev = visibleDays.value[index - 1]
   return parseISO(prev.date).getMonth() !== parseISO(date).getMonth()
 }
-
-function patch(day: PlanningDay, changes: Partial<PlanningDay>) {
-  store.updateDay({ ...day, ...changes })
-}
-
-function toInt(v: string): number {
-  const n = parseInt(v, 10)
-  return Number.isFinite(n) && n > 0 ? n : 0
-}
 </script>
 
 <template>
   <div class="page-head">
     <h1>Planlægning</h1>
     <p>
-      Hver dato har sin egen række. Sæt flueben ved skolernes behov og udfyld
-      antal billetter på de dage, hvor der køres. Fælles kørsel, busudgift,
-      indtægt og overskud beregnes automatisk.
+      Hver dato har sin egen række. Sæt flueben ved skolernes behov. Først når
+      mindst to skoler har behov samme dag, bliver det en fælles kørsel – og så
+      vises felterne til billetter og overførsler. Kun fælles dage medregnes i
+      udgift, indtægt og overskud.
     </p>
   </div>
 
@@ -214,120 +198,14 @@ function toInt(v: string): number {
         </tr>
       </thead>
       <tbody>
-        <tr
+        <PlanningRow
           v-for="(day, i) in visibleDays"
           :key="day.date"
-          :class="{
-            weekend: isWeekend(day.date),
-            shared: calcDay(day, store.settings.value).shared,
-            'month-start': isMonthStart(day.date, i),
-          }"
-        >
-          <td>{{ dateShort(day.date) }}</td>
-          <td>{{ weekdayShort(day.date) }}</td>
-          <td class="num dim">{{ isoWeek(day.date) }}</td>
-          <td>
-            <input
-              type="checkbox"
-              class="chk"
-              :checked="day.he_need"
-              @change="patch(day, { he_need: ($event.target as HTMLInputElement).checked })"
-            />
-          </td>
-          <td>
-            <input
-              type="checkbox"
-              class="chk"
-              :checked="day.hd_need"
-              @change="patch(day, { hd_need: ($event.target as HTMLInputElement).checked })"
-            />
-          </td>
-          <td>
-            <input
-              type="checkbox"
-              class="chk"
-              :checked="day.ee_need"
-              @change="patch(day, { ee_need: ($event.target as HTMLInputElement).checked })"
-            />
-          </td>
-          <td>
-            <span
-              v-if="calcDay(day, store.settings.value).shared"
-              class="pill shared"
-              >Ja</span
-            >
-            <span v-else class="dim">–</span>
-          </td>
-          <td class="num">
-            <input
-              type="number"
-              class="cell-input"
-              min="0"
-              :value="day.he_tickets || ''"
-              placeholder="0"
-              @change="patch(day, { he_tickets: toInt(($event.target as HTMLInputElement).value) })"
-            />
-          </td>
-          <td class="num">
-            <input
-              type="number"
-              class="cell-input"
-              min="0"
-              :value="day.hd_tickets || ''"
-              placeholder="0"
-              @change="patch(day, { hd_tickets: toInt(($event.target as HTMLInputElement).value) })"
-            />
-          </td>
-          <td class="num">
-            <input
-              type="number"
-              class="cell-input"
-              min="0"
-              :value="day.ee_tickets || ''"
-              placeholder="0"
-              @change="patch(day, { ee_tickets: toInt(($event.target as HTMLInputElement).value) })"
-            />
-          </td>
-          <td class="num">{{ money(calcDay(day, store.settings.value).busExpense) }}</td>
-          <td class="num">{{ money(calcDay(day, store.settings.value).income) }}</td>
-          <td
-            class="num"
-            :class="calcDay(day, store.settings.value).profit >= 0 ? '' : 'neg'"
-          >
-            {{ money(calcDay(day, store.settings.value).profit) }}
-          </td>
-          <td>
-            <div style="display: flex; align-items: center; gap: 6px">
-              <input
-                type="date"
-                class="cell-date"
-                :value="day.hd_transferred_date || ''"
-                @change="patch(day, { hd_transferred_date: ($event.target as HTMLInputElement).value || null })"
-              />
-              <span v-if="calcDay(day, store.settings.value).hdMissing" class="pill missing">!</span>
-            </div>
-          </td>
-          <td>
-            <div style="display: flex; align-items: center; gap: 6px">
-              <input
-                type="date"
-                class="cell-date"
-                :value="day.ee_transferred_date || ''"
-                @change="patch(day, { ee_transferred_date: ($event.target as HTMLInputElement).value || null })"
-              />
-              <span v-if="calcDay(day, store.settings.value).eeMissing" class="pill missing">!</span>
-            </div>
-          </td>
-          <td>
-            <input
-              type="text"
-              class="cell-note"
-              :value="day.note"
-              placeholder="…"
-              @change="patch(day, { note: ($event.target as HTMLInputElement).value })"
-            />
-          </td>
-        </tr>
+          :day="day"
+          :settings="store.settings.value"
+          :month-start="isMonthStart(day.date, i)"
+          @update="store.updateDay"
+        />
       </tbody>
       <tfoot>
         <tr class="foot">
