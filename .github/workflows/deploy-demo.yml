@@ -1,11 +1,11 @@
 name: Deploy demo til GitHub Pages
 
 # Bygger den statiske demo-udgave (localStorage, ingen backend) og
-# udgiver den på GitHub Pages. Kører ved push til hovedbranchen og kan
-# startes manuelt.
+# udgiver den på GitHub Pages. Deployer kun fra main, så demoen følger
+# hovedbranchen. Kan også startes manuelt.
 on:
   push:
-    branches: [main, claude/vue-web-app-conversion-gt4y6]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
