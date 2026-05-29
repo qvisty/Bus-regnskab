@@ -13,6 +13,7 @@ defineProps<{ mode: 'supabase' | 'local'; demo: boolean }>()
         <router-link to="/">Oversigt</router-link>
         <router-link to="/planlaegning">Planlægning</router-link>
         <router-link to="/afregning">Afregning</router-link>
+        <router-link to="/statistik">Statistik</router-link>
         <router-link to="/aftaler">Aftaler</router-link>
       </nav>
       <span class="nav-spacer"></span>

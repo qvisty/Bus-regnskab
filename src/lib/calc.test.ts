@@ -126,6 +126,7 @@ describe('calcPeriod – afregning pr. periode', () => {
     name: 'Test',
     start_date: '2026-08-01',
     end_date: '2026-12-31',
+    settled_at: null,
   }
 
   it('summerer kun dage i datointervallet', () => {

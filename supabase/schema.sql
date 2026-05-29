@@ -17,7 +17,9 @@ create table if not exists public.periods (
   id text primary key,
   name text not null,
   start_date date not null,
-  end_date date not null
+  end_date date not null,
+  -- Sat når perioden er markeret afregnet ("gjort op til nul").
+  settled_at date
 );
 
 -- Én række pr. dato i planlægningen.

@@ -30,4 +30,6 @@ export interface Period {
   name: string
   start_date: string
   end_date: string
+  /** Dato hvor perioden blev markeret afregnet ("gjort op til nul"), ellers null. */
+  settled_at: string | null
 }

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '@/store'
 import { calcTotals, calcPeriod, calcDay } from '@/lib/calc'
+import { forecast } from '@/lib/stats'
 import { money, dateLabel, weekday, dateShort } from '@/lib/format'
 
 const store = useStore()
@@ -38,6 +39,10 @@ const seasonEnd = computed(
 )
 
 const missingTotal = computed(() => totals.value.hdMissing + totals.value.eeMissing)
+
+const fc = computed(() =>
+  forecast(store.days.value, store.settings.value, today),
+)
 </script>
 
 <template>
@@ -89,6 +94,14 @@ const missingTotal = computed(() => totals.value.hdMissing + totals.value.eeMiss
     <router-link to="/planlaegning">Se i planlægningen →</router-link>
   </div>
 
+  <!-- Prognose-advarsel om underskud -->
+  <div v-if="fc.hasBasis && fc.deficit && fc.recommendedPrice" class="banner warn">
+    Prognosen viser <strong>underskud</strong> på sæsonen ved nuværende
+    billetpris ({{ money(store.settings.value.ticket_price) }}). Anbefalet pris
+    for at gå i nul: <strong>{{ money(fc.recommendedPrice) }}</strong>.
+    <router-link to="/statistik">Se prognose →</router-link>
+  </div>
+
   <div class="dash-cols">
     <!-- Afregning pr. periode -->
     <div class="card">
@@ -100,7 +113,10 @@ const missingTotal = computed(() => totals.value.hdMissing + totals.value.eeMiss
         @click="router.push('/afregning')"
       >
         <div class="dash-period-head">
-          <strong>{{ period.name }}</strong>
+          <strong>
+            {{ period.name }}
+            <span v-if="period.settled_at" class="settled-tag">✓ afregnet</span>
+          </strong>
           <span :class="result.total > 0 ? 'neg' : 'pos'" style="font-weight: 700">
             {{ money(result.perSchool) }} / skole
           </span>
@@ -187,5 +203,14 @@ const missingTotal = computed(() => totals.value.hdMissing + totals.value.eeMiss
   display: flex;
   gap: 4px;
   flex: 1;
+}
+.settled-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ok);
+  background: var(--ok-bg);
+  border-radius: 999px;
+  padding: 1px 7px;
+  margin-left: 6px;
 }
 </style>

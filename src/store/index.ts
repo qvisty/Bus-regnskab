@@ -82,6 +82,13 @@ async function updatePeriod(period: Period) {
   await repo.savePeriod(period)
 }
 
+/** Markér en periode som afregnet (gjort op til nul) eller genåbn den. */
+async function setPeriodSettled(id: string, settledAt: string | null) {
+  const p = state.periods.find((x) => x.id === id)
+  if (!p) return
+  await updatePeriod({ ...p, settled_at: settledAt })
+}
+
 /** Nulstil demo-data til udgangspunktet og genindlæs. */
 async function resetDemo() {
   resetLocalData()
@@ -100,6 +107,7 @@ export function useStore() {
     updateDay,
     updateSettings,
     updatePeriod,
+    setPeriodSettled,
     resetDemo,
   }
 }

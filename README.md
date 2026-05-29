@@ -9,7 +9,8 @@ Appen har fire sider:
 |------------------|-----------------------|---------|
 | **Oversigt**     | (ny)                  | Nøgletal for sæsonen, afregning pr. periode i kort form, kommende behov og advarsler om manglende overførsler. |
 | **Planlægning**  | Planlægning           | Én række pr. dato med filtre og CSV-eksport. Sæt behov (HE/HD/EE) og antal billetter. Fælles kørsel, busudgift, indtægt og overskud beregnes automatisk. |
-| **Afregning**    | Afregning             | Pr. periode (kalenderår/skoleår): udgifter − indtægter delt på tre skoler, med visuel "hvem betaler hvem". |
+| **Afregning**    | Afregning             | Pr. periode (kalenderår/skoleår): kontoudtog pr. skole, "går i nul"-bekræftelse og mulighed for at markere en periode afregnet. Løbende overførsler udledes af overførselsdatoerne på Planlægning. |
+| **Statistik**    | (ny)                  | Visualisering af udgift/indtægt/overskud pr. uge, måned og år, samt en billetpris-anbefaling hvis sæsonen tegner til underskud. |
 | **Aftaler**      | Aftaler               | Spillereglerne for samarbejdet. |
 
 ## Beregningsregler (samme som regnearket)
