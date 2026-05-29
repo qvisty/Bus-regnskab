@@ -259,6 +259,12 @@ select:focus {
   background: var(--surface);
   box-shadow: var(--shadow);
 }
+/* Planlægningstabellen scroller internt, så kolonneoverskrifter (og
+   totalrækken) forbliver synlige i toppen/bunden. */
+.table-wrap.planning-table {
+  max-height: 72vh;
+  overflow: auto;
+}
 table {
   border-collapse: collapse;
   width: 100%;
@@ -318,6 +324,7 @@ tr.month-start td {
   border-top: 2px solid var(--border);
   position: sticky;
   bottom: 0;
+  z-index: 4;
 }
 
 .chk {

@@ -214,7 +214,7 @@ function isMonthStart(date: string, index: number): boolean {
   </div>
 
   <!-- Tabel -->
-  <div class="table-wrap">
+  <div class="table-wrap planning-table">
     <table>
       <thead>
         <tr>
