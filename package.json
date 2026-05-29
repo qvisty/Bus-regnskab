@@ -1,0 +1,23 @@
+{
+  "name": "bus-regnskab",
+  "version": "1.0.0",
+  "description": "Fælles weekendkørsel – planlægning og afregning mellem skolerne HE, HD og EE",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "vue": "^3.5.13",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.3",
+    "vue-tsc": "^2.1.10"
+  }
+}
