@@ -196,8 +196,20 @@ function isMonthStart(date: string, index: number): boolean {
   </div>
 
   <div class="legend">
-    <span><span class="swatch" style="background: #eef3ff"></span> Fælles kørsel</span>
-    <span><span class="swatch" style="background: #fcfbf5"></span> Weekend</span>
+    <span
+      ><span
+        class="swatch"
+        style="background: #d8e6ff; border-left: 4px solid var(--primary)"
+      ></span>
+      Fælles kørsel</span
+    >
+    <span
+      ><span
+        class="swatch"
+        style="background: #fff4d6; border-left: 4px solid #e0a700"
+      ></span>
+      Weekend</span
+    >
     <span><span class="pill missing">Mangler</span> Overførsel ikke registreret</span>
   </div>
 

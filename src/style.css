@@ -289,14 +289,25 @@ th.num {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+/* Weekend – tydelig rav-gul med farvet venstrekant. */
 tr.weekend td {
-  background: #fcfbf5;
+  background: #fff4d6;
 }
+tr.weekend:hover td {
+  background: #ffedbf;
+}
+tr.weekend td:first-child {
+  box-shadow: inset 4px 0 0 #e0a700;
+}
+/* Fælles kørsel – tydelig blå (vinder over weekend hvis begge gælder). */
 tr.shared td {
-  background: #eef3ff;
+  background: #d8e6ff;
 }
 tr.shared:hover td {
-  background: #e3ebff;
+  background: #c7d9ff;
+}
+tr.shared td:first-child {
+  box-shadow: inset 4px 0 0 var(--primary);
 }
 tr.month-start td {
   border-top: 2px solid var(--border);
