@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { useStore } from '@/store'
 import { calcPeriod } from '@/lib/calc'
-import type { Period } from '@/types'
 import { money, dateLabel } from '@/lib/format'
 
 const store = useStore()
@@ -13,8 +12,8 @@ const results = computed(() =>
     // Retning på afregningen: positivt beløb = skolen betaler HE,
     // negativt = HE betaler skolen (ved overskud).
     const flows = [
-      { school: 'HD', amount: result.hdSettles },
-      { school: 'EE', amount: result.eeSettles },
+      { school: 'HD', amount: result.hdSettles, transferred: result.hdTransferred },
+      { school: 'EE', amount: result.eeSettles, transferred: result.eeTransferred },
     ].map((f) => ({
       ...f,
       from: f.amount >= 0 ? f.school : 'HE',
@@ -24,26 +23,17 @@ const results = computed(() =>
     return { period: p, result, flows }
   }),
 )
-
-function setTransferred(period: Period, school: 'hd' | 'ee', value: number) {
-  const v = Number(value) || 0
-  store.updatePeriod({
-    ...period,
-    ...(school === 'hd'
-      ? { hd_running_transferred: v }
-      : { ee_running_transferred: v }),
-  })
-}
 </script>
 
 <template>
   <div class="page-head">
     <h1>Afregning pr. periode</h1>
     <p>
-      Udgifter og indtægter hentes automatisk fra Planlægning for datoer i
-      perioden. Den samlede pris (udgifter − indtægter) deles ligeligt mellem de
-      tre skoler. "Løbende overført" trækkes fra hver skoles andel, så I kun
-      afregner forskellen ved periodeslut.
+      Alt beregnes automatisk fra Planlægning. Den samlede pris (udgifter −
+      indtægter) deles ligeligt mellem de tre skoler. De beløb HD og EE allerede
+      har overført løbende udledes af de overførselsdatoer, I registrerer på
+      Planlægning – så ved periodeslut vises kun det, der mangler at blive
+      afregnet.
     </p>
   </div>
 
@@ -83,47 +73,30 @@ function setTransferred(period: Period, school: 'hd' | 'ee', value: number) {
         <span class="v">{{ money(result.perSchool) }}</span>
       </div>
 
-      <div class="row" style="border-top: 1px solid var(--border); margin-top: 8px; padding-top: 12px">
-        <label class="field" style="flex-direction: row; align-items: center; gap: 8px; width: 100%; justify-content: space-between">
-          <span class="muted">Løbende overført, HD</span>
-          <input
-            type="number"
-            style="width: 120px; text-align: right"
-            :value="period.hd_running_transferred"
-            @change="setTransferred(period, 'hd', ($event.target as HTMLInputElement).valueAsNumber)"
-          />
-        </label>
-      </div>
-      <div class="row">
-        <label class="field" style="flex-direction: row; align-items: center; gap: 8px; width: 100%; justify-content: space-between">
-          <span class="muted">Løbende overført, EE</span>
-          <input
-            type="number"
-            style="width: 120px; text-align: right"
-            :value="period.ee_running_transferred"
-            @change="setTransferred(period, 'ee', ($event.target as HTMLInputElement).valueAsNumber)"
-          />
-        </label>
-      </div>
-
       <div class="flow-box">
         <div class="flow-title">Afregning ved periodeslut</div>
         <div
           v-for="f in flows"
           :key="f.school"
-          class="flow"
-          :class="{ zero: f.abs === 0 }"
+          class="flow-school"
         >
-          <template v-if="f.abs === 0">
+          <div class="flow-school-head">
             <span class="pill" :class="f.school.toLowerCase()">{{ f.school }}</span>
-            <span class="muted">intet at afregne</span>
-          </template>
-          <template v-else>
-            <span class="pill" :class="f.from.toLowerCase()">{{ f.from }}</span>
-            <span class="arrow">→</span>
-            <span class="pill" :class="f.to.toLowerCase()">{{ f.to }}</span>
-            <span class="flow-amt">{{ money(f.abs) }}</span>
-          </template>
+            <span class="muted" style="font-size: 12px">
+              allerede overført {{ money(f.transferred) }}
+            </span>
+          </div>
+          <div class="flow" :class="{ zero: f.abs === 0 }">
+            <template v-if="f.abs === 0">
+              <span class="muted">intet at afregne</span>
+            </template>
+            <template v-else>
+              <span class="pill" :class="f.from.toLowerCase()">{{ f.from }}</span>
+              <span class="arrow">→</span>
+              <span class="pill" :class="f.to.toLowerCase()">{{ f.to }}</span>
+              <span class="flow-amt">{{ money(f.abs) }}</span>
+            </template>
+          </div>
         </div>
         <div class="flow muted" style="font-size: 12.5px; margin-top: 6px">
           HE bærer selv sin egen andel på {{ money(result.heBears) }}.
@@ -133,8 +106,10 @@ function setTransferred(period: Period, school: 'hd' | 'ee', value: number) {
   </div>
 
   <div class="banner info" style="margin-top: 20px">
-    Negativ samlet pris betyder overskud – så overfører HE i stedet sin andel
-    til HD og EE. Pilene følger fortegnet automatisk.
+    "Allerede overført" tæller hver fælles dag, hvor skolen har en registreret
+    overførselsdato på Planlægning. Mangler en dato, indgår dagen stadig i det,
+    der skal afregnes ved periodeslut. Negativ samlet pris = overskud, og så
+    overfører HE i stedet til skolerne (pilene følger fortegnet).
   </div>
 </template>
 
@@ -152,11 +127,24 @@ function setTransferred(period: Period, school: 'hd' | 'ee', value: number) {
   color: var(--text-muted);
   margin-bottom: 8px;
 }
+.flow-school {
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.flow-school:last-of-type {
+  border-bottom: none;
+}
+.flow-school-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
 .flow {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 0;
+  padding: 4px 0 2px;
 }
 .flow .arrow {
   color: var(--text-muted);

@@ -63,9 +63,13 @@ export interface PeriodResult {
   total: number
   /** Pris pr. skole = samlet pris delt med 3. */
   perSchool: number
-  /** HD afregner til HE ved periodeslut = pris pr. skole − løbende overført. */
+  /** HD's andel for fælles dage med registreret overførselsdato (allerede betalt). */
+  hdTransferred: number
+  /** EE's andel for fælles dage med registreret overførselsdato (allerede betalt). */
+  eeTransferred: number
+  /** HD afregner til HE ved periodeslut = pris pr. skole − allerede overført. */
   hdSettles: number
-  /** EE afregner til HE ved periodeslut = pris pr. skole − løbende overført. */
+  /** EE afregner til HE ved periodeslut = pris pr. skole − allerede overført. */
   eeSettles: number
   /** HE bærer sin egen andel. */
   heBears: number
@@ -90,23 +94,36 @@ export function calcPeriod(
   let income = 0
   let daysInPeriod = 0
   let sharedDays = 0
+  // "Løbende overført" udledes automatisk: for hver fælles dag hvor en skole
+  // har registreret en overførselsdato, regnes dens andel for den dag som betalt.
+  let hdTransferred = 0
+  let eeTransferred = 0
   for (const day of days) {
     if (!inRange(day.date, period.start_date, period.end_date)) continue
     daysInPeriod++
     const c = calcDay(day, settings)
     expenses += c.busExpense
     income += c.income
-    if (c.shared) sharedDays++
+    if (c.shared) {
+      sharedDays++
+      const dayShare = (c.busExpense - c.income) / 3
+      if (day.hd_transferred_date) hdTransferred += dayShare
+      if (day.ee_transferred_date) eeTransferred += dayShare
+    }
   }
   const total = expenses - income
   const perSchool = round2(total / 3)
+  const hdT = round2(hdTransferred)
+  const eeT = round2(eeTransferred)
   return {
     expenses,
     income,
     total,
     perSchool,
-    hdSettles: round2(perSchool - period.hd_running_transferred),
-    eeSettles: round2(perSchool - period.ee_running_transferred),
+    hdTransferred: hdT,
+    eeTransferred: eeT,
+    hdSettles: round2(perSchool - hdT),
+    eeSettles: round2(perSchool - eeT),
     heBears: perSchool,
     daysInPeriod,
     sharedDays,

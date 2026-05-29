@@ -14,24 +14,18 @@ export const DEFAULT_PERIODS: Period[] = [
     name: 'Periode 1 2026',
     start_date: '2026-08-01',
     end_date: '2026-12-31',
-    hd_running_transferred: 0,
-    ee_running_transferred: 0,
   },
   {
     id: 'kalender-2027',
     name: 'Periode 2 2027',
     start_date: '2027-01-01',
     end_date: '2027-07-31',
-    hd_running_transferred: 0,
-    ee_running_transferred: 0,
   },
   {
     id: 'skolear-2026-2027',
     name: 'Skoleår 2026/2027',
     start_date: '2026-08-01',
     end_date: '2027-07-31',
-    hd_running_transferred: 0,
-    ee_running_transferred: 0,
   },
 ]
 

@@ -126,8 +126,6 @@ describe('calcPeriod – afregning pr. periode', () => {
     name: 'Test',
     start_date: '2026-08-01',
     end_date: '2026-12-31',
-    hd_running_transferred: 0,
-    ee_running_transferred: 0,
   }
 
   it('summerer kun dage i datointervallet', () => {
@@ -143,15 +141,24 @@ describe('calcPeriod – afregning pr. periode', () => {
     expect(r.perSchool).toBeCloseTo(916.67, 2)
   })
 
-  it('trækker løbende overførsler fra hver skoles andel', () => {
-    const r = calcPeriod(
-      { ...period, hd_running_transferred: 500, ee_running_transferred: 200 },
-      days,
-      settings,
-    )
-    expect(r.hdSettles).toBeCloseTo(416.67, 2)
-    expect(r.eeSettles).toBeCloseTo(716.67, 2)
-    expect(r.heBears).toBeCloseTo(916.67, 2)
+  it('udleder løbende overførsel automatisk af registrerede overførselsdatoer', () => {
+    // To rene fælles dage à udgift 3000, ingen indtægt -> andel 1000/dag/skole.
+    const d: PlanningDay[] = [
+      day({ date: '2026-09-05', hd_need: true, ee_need: true }),
+      day({ date: '2026-10-10', hd_need: true, ee_need: true }),
+    ]
+    // HD har overført for den ene dag, EE for begge.
+    d[0].hd_transferred_date = '2026-09-07'
+    d[0].ee_transferred_date = '2026-09-07'
+    d[1].ee_transferred_date = '2026-10-12'
+
+    const r = calcPeriod(period, d, settings)
+    expect(r.perSchool).toBe(2000)
+    expect(r.hdTransferred).toBe(1000)
+    expect(r.eeTransferred).toBe(2000)
+    expect(r.hdSettles).toBe(1000) // mangler stadig 1 dag
+    expect(r.eeSettles).toBe(0) // alt overført
+    expect(r.heBears).toBe(2000)
   })
 
   it('overskud giver negativ samlet pris (HE betaler skolerne)', () => {

@@ -30,8 +30,4 @@ export interface Period {
   name: string
   start_date: string
   end_date: string
-  /** Beløb HD allerede har overført løbende i perioden. */
-  hd_running_transferred: number
-  /** Beløb EE allerede har overført løbende i perioden. */
-  ee_running_transferred: number
 }

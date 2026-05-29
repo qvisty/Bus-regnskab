@@ -11,13 +11,13 @@ create table if not exists public.settings (
 );
 
 -- Afregningsperioder (kalenderår, skoleår, …).
+-- "Løbende overført" udledes automatisk af overførselsdatoerne på
+-- planning_days og gemmes derfor ikke her.
 create table if not exists public.periods (
   id text primary key,
   name text not null,
   start_date date not null,
-  end_date date not null,
-  hd_running_transferred numeric not null default 0,
-  ee_running_transferred numeric not null default 0
+  end_date date not null
 );
 
 -- Én række pr. dato i planlægningen.
