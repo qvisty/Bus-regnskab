@@ -253,7 +253,9 @@ function isMonthStart(date: string, index: number): boolean {
           <td>{{ totals.hdNeed }}</td>
           <td>{{ totals.eeNeed }}</td>
           <td>{{ totals.sharedDays }}</td>
-          <td colspan="3" class="num">{{ totals.ticketCount }} billetter</td>
+          <td class="num">{{ totals.heTickets }}</td>
+          <td class="num">{{ totals.hdTickets }}</td>
+          <td class="num">{{ totals.eeTickets }}</td>
           <td class="num">{{ money(totals.busExpense) }}</td>
           <td class="num">{{ money(totals.income) }}</td>
           <td class="num" :class="totals.profit >= 0 ? '' : 'neg'">

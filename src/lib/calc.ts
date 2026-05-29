@@ -118,6 +118,9 @@ export function calcTotals(days: PlanningDay[], settings: Settings) {
   let busExpense = 0
   let income = 0
   let ticketCount = 0
+  let heTickets = 0
+  let hdTickets = 0
+  let eeTickets = 0
   let sharedDays = 0
   let heNeed = 0
   let hdNeed = 0
@@ -129,6 +132,12 @@ export function calcTotals(days: PlanningDay[], settings: Settings) {
     busExpense += c.busExpense
     income += c.income
     ticketCount += c.ticketCount
+    // Billetter tæller kun på fælles dage (samme regel som indtægt).
+    if (c.shared) {
+      heTickets += day.he_tickets || 0
+      hdTickets += day.hd_tickets || 0
+      eeTickets += day.ee_tickets || 0
+    }
     if (c.shared) sharedDays++
     if (day.he_need) heNeed++
     if (day.hd_need) hdNeed++
@@ -141,6 +150,9 @@ export function calcTotals(days: PlanningDay[], settings: Settings) {
     income,
     profit: income - busExpense,
     ticketCount,
+    heTickets,
+    hdTickets,
+    eeTickets,
     sharedDays,
     heNeed,
     hdNeed,
