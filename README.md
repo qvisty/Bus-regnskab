@@ -37,10 +37,15 @@ Den aktive tilstand vises som et badge øverst til højre.
 
 ```bash
 npm install
-npm run dev
+npm run dev      # udviklingsserver
+npm test         # kør testpakken (Vitest)
+npm run build    # produktion (typecheck + build)
 ```
 
 Åbn adressen Vite udskriver (typisk http://localhost:5173).
+
+Regnelogikken er dækket af tests i `src/lib/*.test.ts`, bl.a. en kontrol af
+at ISO-ugenumre matcher regnearkets `ISOWEEKNUM`-værdier 1:1.
 
 ## Aktivér delt data (Supabase)
 
