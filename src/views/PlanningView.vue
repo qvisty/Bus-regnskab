@@ -2,7 +2,13 @@
 import { computed, ref } from 'vue'
 import { useStore } from '@/store'
 import { calcDay, calcTotals } from '@/lib/calc'
-import { monthName, money, parseISO } from '@/lib/format'
+import {
+  monthName,
+  money,
+  parseISO,
+  dateShort,
+  weekdayShort,
+} from '@/lib/format'
 import { planningToCsv, downloadCsv } from '@/lib/csv'
 import PlanningRow from '@/components/PlanningRow.vue'
 
@@ -68,6 +74,22 @@ const visibleDays = computed(() =>
 // Totaler – beregnes altid på hele datasættet (som total-rækken i Excel).
 const totals = computed(() => calcTotals(sortedDays.value, store.settings.value))
 
+// Konkrete datoer hvor overførsel mangler, pr. skole.
+const missingDays = computed(() => {
+  const hd: string[] = []
+  const ee: string[] = []
+  for (const d of sortedDays.value) {
+    const c = calcDay(d, store.settings.value)
+    if (c.hdMissing) hd.push(d.date)
+    if (c.eeMissing) ee.push(d.date)
+  }
+  return { hd, ee }
+})
+
+function fmtDays(dates: string[]): string {
+  return dates.map((d) => `${weekdayShort(d)} ${dateShort(d)}`).join(', ')
+}
+
 function isMonthStart(date: string, index: number): boolean {
   if (index === 0) return false
   const prev = visibleDays.value[index - 1]
@@ -126,14 +148,19 @@ function isMonthStart(date: string, index: number): boolean {
   </div>
 
   <div
-    v-if="totals.hdMissing || totals.eeMissing"
+    v-if="missingDays.hd.length || missingDays.ee.length"
     class="banner warn"
   >
-    Mangler overførsel:
-    <strong v-if="totals.hdMissing">{{ totals.hdMissing }} HD-dag(e)</strong>
-    <span v-if="totals.hdMissing && totals.eeMissing"> og </span>
-    <strong v-if="totals.eeMissing">{{ totals.eeMissing }} EE-dag(e)</strong>
-    har solgte billetter uden registreret overførselsdato.
+    <strong>Mangler overførsel</strong> – solgte billetter uden registreret
+    overførselsdato:
+    <div v-if="missingDays.hd.length" style="margin-top: 4px">
+      <span class="pill hd">HD</span>
+      {{ missingDays.hd.length }} dag(e): {{ fmtDays(missingDays.hd) }}
+    </div>
+    <div v-if="missingDays.ee.length" style="margin-top: 4px">
+      <span class="pill ee">EE</span>
+      {{ missingDays.ee.length }} dag(e): {{ fmtDays(missingDays.ee) }}
+    </div>
   </div>
 
   <!-- Filtre -->
