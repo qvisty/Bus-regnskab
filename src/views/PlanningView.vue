@@ -12,12 +12,19 @@ import {
   dateShort,
   parseISO,
 } from '@/lib/format'
+import { planningToCsv, downloadCsv } from '@/lib/csv'
 
 const store = useStore()
 
 const monthFilter = ref<string>('all')
 const onlyShared = ref(false)
 const onlyMissing = ref(false)
+const onlyNeeds = ref(false)
+
+function exportCsv() {
+  const csv = planningToCsv(store.days.value, store.settings.value)
+  downloadCsv('faelles-buskoersel-planlaegning.csv', csv)
+}
 
 // Lokale satser bundet til input-felterne.
 const busPrice = computed({
@@ -61,6 +68,7 @@ const visibleDays = computed(() =>
     const c = calcDay(d, store.settings.value)
     if (onlyShared.value && !c.shared) return false
     if (onlyMissing.value && !(c.hdMissing || c.eeMissing)) return false
+    if (onlyNeeds.value && !(d.he_need || d.hd_need || d.ee_need)) return false
     return true
   }),
 )
@@ -163,7 +171,14 @@ function toInt(v: string): number {
       <input type="checkbox" class="chk" v-model="onlyMissing" />
       Kun manglende overførsel
     </label>
+    <label class="field" style="flex-direction: row; align-items: center; gap: 6px; align-self: flex-end; padding-bottom: 8px">
+      <input type="checkbox" class="chk" v-model="onlyNeeds" />
+      Kun dage med behov
+    </label>
     <span class="nav-spacer"></span>
+    <button class="btn sm" style="align-self: flex-end; margin-bottom: 4px" @click="exportCsv">
+      ⭳ Eksportér CSV
+    </button>
     <span class="muted" style="align-self: flex-end; padding-bottom: 8px">
       Viser {{ visibleDays.length }} af {{ sortedDays.length }} dage
     </span>

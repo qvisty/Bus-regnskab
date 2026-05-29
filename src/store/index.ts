@@ -1,6 +1,11 @@
 import { reactive, computed, readonly } from 'vue'
 import type { PlanningDay, Settings, Period } from '@/types'
-import { createRepository, type Repository } from './repository'
+import {
+  createRepository,
+  resetLocalData,
+  type Repository,
+} from './repository'
+import { isDemo } from '@/lib/supabase'
 
 interface State {
   loaded: boolean
@@ -77,9 +82,16 @@ async function updatePeriod(period: Period) {
   await repo.savePeriod(period)
 }
 
+/** Nulstil demo-data til udgangspunktet og genindlæs. */
+async function resetDemo() {
+  resetLocalData()
+  await load()
+}
+
 export function useStore() {
   return {
     state: readonly(state),
+    isDemo,
     days: computed(() => state.days),
     settings: computed(() => state.settings),
     periods: computed(() => state.periods),
@@ -88,5 +100,6 @@ export function useStore() {
     updateDay,
     updateSettings,
     updatePeriod,
+    resetDemo,
   }
 }

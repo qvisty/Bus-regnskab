@@ -8,10 +8,21 @@ import { money, dateLabel } from '@/lib/format'
 const store = useStore()
 
 const results = computed(() =>
-  store.periods.value.map((p) => ({
-    period: p,
-    result: calcPeriod(p, store.days.value, store.settings.value),
-  })),
+  store.periods.value.map((p) => {
+    const result = calcPeriod(p, store.days.value, store.settings.value)
+    // Retning på afregningen: positivt beløb = skolen betaler HE,
+    // negativt = HE betaler skolen (ved overskud).
+    const flows = [
+      { school: 'HD', amount: result.hdSettles },
+      { school: 'EE', amount: result.eeSettles },
+    ].map((f) => ({
+      ...f,
+      from: f.amount >= 0 ? f.school : 'HE',
+      to: f.amount >= 0 ? 'HE' : f.school,
+      abs: Math.abs(f.amount),
+    }))
+    return { period: p, result, flows }
+  }),
 )
 
 function setTransferred(period: Period, school: 'hd' | 'ee', value: number) {
@@ -38,7 +49,7 @@ function setTransferred(period: Period, school: 'hd' | 'ee', value: number) {
 
   <div class="settle-grid">
     <div
-      v-for="{ period, result } in results"
+      v-for="{ period, result, flows } in results"
       :key="period.id"
       class="card settle-card"
     >
@@ -95,23 +106,68 @@ function setTransferred(period: Period, school: 'hd' | 'ee', value: number) {
         </label>
       </div>
 
-      <div class="row" style="margin-top: 8px">
-        <span><span class="pill hd">HD</span> afregner til HE</span>
-        <span class="v">{{ money(result.hdSettles) }}</span>
-      </div>
-      <div class="row">
-        <span><span class="pill ee">EE</span> afregner til HE</span>
-        <span class="v">{{ money(result.eeSettles) }}</span>
-      </div>
-      <div class="row">
-        <span><span class="pill he">HE</span> bærer selv (egen andel)</span>
-        <span class="v">{{ money(result.heBears) }}</span>
+      <div class="flow-box">
+        <div class="flow-title">Afregning ved periodeslut</div>
+        <div
+          v-for="f in flows"
+          :key="f.school"
+          class="flow"
+          :class="{ zero: f.abs === 0 }"
+        >
+          <template v-if="f.abs === 0">
+            <span class="pill" :class="f.school.toLowerCase()">{{ f.school }}</span>
+            <span class="muted">intet at afregne</span>
+          </template>
+          <template v-else>
+            <span class="pill" :class="f.from.toLowerCase()">{{ f.from }}</span>
+            <span class="arrow">→</span>
+            <span class="pill" :class="f.to.toLowerCase()">{{ f.to }}</span>
+            <span class="flow-amt">{{ money(f.abs) }}</span>
+          </template>
+        </div>
+        <div class="flow muted" style="font-size: 12.5px; margin-top: 6px">
+          HE bærer selv sin egen andel på {{ money(result.heBears) }}.
+        </div>
       </div>
     </div>
   </div>
 
   <div class="banner info" style="margin-top: 20px">
     Negativ samlet pris betyder overskud – så overfører HE i stedet sin andel
-    til HD og EE. Beløbene følger fortegnet automatisk.
+    til HD og EE. Pilene følger fortegnet automatisk.
   </div>
 </template>
+
+<style scoped>
+.flow-box {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 2px solid var(--border);
+}
+.flow-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+}
+.flow .arrow {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.flow-amt {
+  margin-left: auto;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.flow.zero {
+  opacity: 0.7;
+}
+</style>

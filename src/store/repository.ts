@@ -164,3 +164,8 @@ export class SupabaseRepository implements Repository {
 export function createRepository(): Repository {
   return hasSupabase ? new SupabaseRepository() : new LocalStorageRepository()
 }
+
+/** Nulstil lokalt lager til seed-data (bruges af demoens "nulstil"-knap). */
+export function resetLocalData() {
+  localStorage.removeItem(LS_KEY)
+}

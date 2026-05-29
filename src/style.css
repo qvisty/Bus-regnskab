@@ -125,6 +125,20 @@ h3 {
   border-color: transparent;
 }
 
+@media (max-width: 640px) {
+  .navbar-inner {
+    gap: 10px;
+  }
+  .nav-links {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+  }
+  .nav-spacer {
+    display: none;
+  }
+}
+
 /* ---------- Generic blocks ---------- */
 .page-head {
   margin-bottom: 20px;
