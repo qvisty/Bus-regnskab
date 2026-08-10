@@ -51,6 +51,13 @@ create table if not exists public.planning_days (
   ee_transferred_date date
 );
 
+-- Data API-adgang: eksplicitte rettigheder til API-rollerne, så tabellerne
+-- virker uanset om projektets "Automatically expose new tables" er slået til.
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete
+  on public.settings, public.periods, public.planning_days
+  to anon, authenticated;
+
 -- Realtid: gør tabellerne tilgængelige for realtime-abonnementer.
 alter publication supabase_realtime add table public.settings;
 alter publication supabase_realtime add table public.periods;
