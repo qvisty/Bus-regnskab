@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useStore } from '@/store'
 import { calcDay, calcTotals } from '@/lib/calc'
+import { BUS_TYPES } from '@/lib/buses'
 import {
   monthName,
   money,
@@ -24,18 +25,15 @@ function exportCsv() {
   downloadCsv('faelles-buskoersel-planlaegning.csv', csv)
 }
 
-// Lokale satser bundet til input-felterne.
-function priceField(key: 'ticket_price' | 'bus_price_small' | 'bus_price_large' | 'bus_price_double') {
-  return computed({
-    get: () => store.settings.value[key],
-    set: (v: number) =>
-      store.updateSettings({ ...store.settings.value, [key]: Number(v) || 0 }),
-  })
-}
-const ticketPrice = priceField('ticket_price')
-const busPriceSmall = priceField('bus_price_small')
-const busPriceLarge = priceField('bus_price_large')
-const busPriceDouble = priceField('bus_price_double')
+// Billetprisen er den eneste sats der tastes – bundet til input-feltet.
+const ticketPrice = computed({
+  get: () => store.settings.value.ticket_price,
+  set: (v: number) =>
+    store.updateSettings({
+      ...store.settings.value,
+      ticket_price: Number(v) || 0,
+    }),
+})
 
 // Tilgængelige måneder til filteret (i datorækkefølge).
 const months = computed(() => {
@@ -134,22 +132,15 @@ function isMonthStart(date: string, index: number): boolean {
         Pris pr. billet (indtægt)
         <input type="number" v-model.number="ticketPrice" min="0" step="5" />
       </label>
-      <label class="field">
-        Lille bus, 19 pers. (pr. tur)
-        <input type="number" v-model.number="busPriceSmall" min="0" step="50" />
-      </label>
-      <label class="field">
-        Stor bus, 57 pers. (pr. tur)
-        <input type="number" v-model.number="busPriceLarge" min="0" step="50" />
-      </label>
-      <label class="field">
-        Dobbeltdækker, 83 sæder (pr. tur)
-        <input type="number" v-model.number="busPriceDouble" min="0" step="50" />
-      </label>
       <span class="muted" style="align-self: flex-end; padding-bottom: 8px">
-        Satserne rettes ét sted og slår igennem alle beregninger. Billetprisen
-        er den samme uanset busstørrelse – bussen vælges automatisk efter
-        antal billetter.
+        Billetprisen rettes ét sted og er den samme uanset busstørrelse.
+        Busudgiften følger de faste takster og vælges automatisk efter antal
+        billetter:
+        <template v-for="(b, i) in BUS_TYPES" :key="b.key">
+          {{ i > 0 ? ' · ' : '' }}{{ b.name }} ({{ b.seats }})
+          {{ money(b.pricePerTrip) }}
+        </template>
+        pr. tur.
       </span>
     </div>
   </div>

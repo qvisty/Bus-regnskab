@@ -2,12 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { calcDay, calcPeriod, calcTotals } from './calc'
 import type { PlanningDay, Settings, Period } from '@/types'
 
-const settings: Settings = {
-  ticket_price: 65,
-  bus_price_small: 2430,
-  bus_price_large: 4375,
-  bus_price_double: 4866,
-}
+const settings: Settings = { ticket_price: 65 }
 
 function day(over: Partial<PlanningDay>): PlanningDay {
   return {
@@ -123,13 +118,11 @@ describe('calcDay – spejler Excel-formlerne', () => {
     expect(c.eeMissing).toBe(false)
   })
 
-  it('følger ændrede satser', () => {
+  it('følger ændret billetpris; bustaksten er fast', () => {
     const c = calcDay(day({ hd_need: true, ee_need: true, he_tickets: 10 }), {
-      ...settings,
-      bus_price_small: 2600,
       ticket_price: 70,
     })
-    expect(c.busExpense).toBe(2600)
+    expect(c.busExpense).toBe(2430)
     expect(c.income).toBe(700)
   })
 })

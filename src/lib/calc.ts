@@ -1,5 +1,5 @@
 import type { PlanningDay, Settings, Period } from '@/types'
-import { selectBus, busPrice, MAX_SEATS, type BusKey } from './buses'
+import { selectBus, MAX_SEATS, type BusKey } from './buses'
 
 /**
  * Beregnede værdier for en planlægningsdag.
@@ -43,7 +43,7 @@ export function calcDay(day: PlanningDay, settings: Settings): DayCalc {
     : 0
   // Busstørrelsen vælges automatisk: mindste bus med plads til alle billetter.
   const bus = shared ? selectBus(ticketCount) : null
-  const busExpense = bus ? busPrice(bus.key, settings) : 0
+  const busExpense = bus ? bus.pricePerTrip : 0
   const income = shared ? ticketCount * settings.ticket_price : 0
   const profit = income - busExpense
   const hdMissing =

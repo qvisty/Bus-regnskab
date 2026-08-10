@@ -1,6 +1,6 @@
 import type { PlanningDay, Settings } from '@/types'
 import { calcDay } from './calc'
-import { selectBus, busPrice } from './buses'
+import { selectBus } from './buses'
 import { parseISO, isoWeek, monthName } from './format'
 
 export type Grouping = 'week' | 'month' | 'year'
@@ -145,10 +145,9 @@ export function forecast(
     realizedTickets + remainingSharedDays * avgTicketsPerRide
   // Busstørrelsen (og dermed udgiften) afhænger af billettallet. For fremtidige
   // dage uden billettal skønnes bussen ud fra gennemsnitligt billetsalg.
-  const estimatedBusPrice = busPrice(
-    selectBus(Math.round(avgTicketsPerRide)).key,
-    settings,
-  )
+  const estimatedBusPrice = selectBus(
+    Math.round(avgTicketsPerRide),
+  ).pricePerTrip
   const projectedExpenses = knownExpenses + unknownFutureDays * estimatedBusPrice
   const projectedIncome = projectedTickets * settings.ticket_price
   const projectedResult = projectedExpenses - projectedIncome

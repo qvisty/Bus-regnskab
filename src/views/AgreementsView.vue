@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { money } from '@/lib/format'
-import { BUS_TYPES, busPrice } from '@/lib/buses'
-import { useStore } from '@/store'
-
-const store = useStore()
+import { BUS_TYPES } from '@/lib/buses'
 
 const examples = [
   { label: 'Eksempel 1 – underskud', expenses: 180000, income: 150000 },
@@ -46,7 +43,7 @@ const examples = [
             <td>{{ b.name }}</td>
             <td class="num">{{ b.seats }}</td>
             <td class="num">{{ money(b.pricePerKm) }}</td>
-            <td class="num">{{ money(busPrice(b.key, store.settings.value)) }}</td>
+            <td class="num">{{ money(b.pricePerTrip) }}</td>
           </tr>
         </tbody>
       </table>
@@ -137,10 +134,10 @@ const examples = [
     <h3>Bemærkning om beregningen</h3>
     <p>
       I afregningen er indtægten lig med antal solgte billetter gange prisen pr.
-      billet – billetprisen er den samme uanset busstørrelse. Udgiften er den
-      valgte busstørrelses pris pr. tur for de datoer, hvor der køres;
-      busstørrelsen vælges automatisk efter dagens samlede billettal. Alle
-      satser står øverst i fanen Planlægning og kan rettes ét sted.
+      billet – billetprisen er den samme uanset busstørrelse og rettes ét sted
+      øverst i fanen Planlægning. Udgiften er den valgte busstørrelses faste
+      takst pr. tur for de datoer, hvor der køres; busstørrelsen vælges
+      automatisk efter dagens samlede billettal og tastes ikke.
     </p>
   </div>
 </template>
