@@ -3,12 +3,27 @@
 -- Tabellerne seedes automatisk af appen første gang den indlæses.
 
 -- Globale satser (én række, id = 1).
+-- Billetprisen er den samme uanset busstørrelse. Busprisen er pr. tur og
+-- afhænger af den bestilte busstørrelse (vælges automatisk efter billettal):
+--   lille bus (19 pers.), stor bus (57 pers.), dobbeltdækker (83 sæder).
 create table if not exists public.settings (
   id integer primary key default 1,
-  bus_price numeric not null default 3000,
   ticket_price numeric not null default 65,
+  bus_price_small numeric not null default 2430,
+  bus_price_large numeric not null default 4375,
+  bus_price_double numeric not null default 4866,
   constraint settings_singleton check (id = 1)
 );
+
+-- Migrering af eksisterende installationer fra før busstørrelserne
+-- (hvor der kun fandtes én samlet buspris i kolonnen bus_price).
+alter table public.settings
+  add column if not exists bus_price_small numeric not null default 2430;
+alter table public.settings
+  add column if not exists bus_price_large numeric not null default 4375;
+alter table public.settings
+  add column if not exists bus_price_double numeric not null default 4866;
+alter table public.settings drop column if exists bus_price;
 
 -- Afregningsperioder (kalenderår, skoleår, …).
 -- "Løbende overført" udledes automatisk af overførselsdatoerne på

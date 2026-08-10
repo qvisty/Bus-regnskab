@@ -73,6 +73,16 @@ function toInt(v: string): number {
 
     <!-- Billetter, økonomi og overførsler vises kun ved fælles kørsel. -->
     <template v-if="c.shared">
+      <td>
+        <span :title="`${c.busSeats} pladser`">{{ c.busModel }}</span>
+        <span class="dim" style="font-size: 12px"> ({{ c.busSeats }})</span>
+        <span
+          v-if="c.busOverflow"
+          class="pill missing"
+          title="Flere billetter end den største bus kan rumme"
+          >!</span
+        >
+      </td>
       <td class="num">
         <input
           type="number"
@@ -132,6 +142,7 @@ function toInt(v: string): number {
 
     <!-- Ikke fælles kørsel: intet at registrere eller medregne. -->
     <template v-else>
+      <td class="dim">–</td>
       <td class="num dim">–</td>
       <td class="num dim">–</td>
       <td class="num dim">–</td>

@@ -16,12 +16,23 @@ Appen har fire sider:
 ## Beregningsregler (samme som regnearket)
 
 - **Fælles kørsel** = "Ja" når mere end én skole har behov samme dag.
-- **Busudgift** = pris pr. kørsel (standard 3.000 kr.) på dage med fælles kørsel, ellers 0.
+- **Busstørrelse** vælges automatisk som den mindste bus med plads til dagens
+  samlede antal billetter:
+
+  | Bus           | Pladser | Pris pr. km | Pris pr. tur (standard) |
+  |---------------|--------:|------------:|------------------------:|
+  | Lille bus     | 19      | 10 kr.      | 2.430 kr.               |
+  | Stor bus      | 57      | 18 kr.      | 4.375 kr.               |
+  | Dobbeltdækker | 83      | 20 kr.      | 4.866 kr.               |
+
+- **Busudgift** = den valgte busstørrelses pris pr. tur på dage med fælles
+  kørsel, ellers 0. Overstiger billettallet 83, markeres dagen som overbooket.
 - **Indtægt** = antal billetter × pris pr. billet (standard 65 kr.).
+  Billetprisen er den samme uanset busstørrelse.
 - **Overskud** = indtægt − busudgift.
 - **Samlet pris (periode)** = udgifter − indtægter (negativ = overskud), delt med 3.
 - **Afregning ved periodeslut** = pris pr. skole − allerede løbende overført.
-- Begge satser rettes ét sted øverst på Planlægning-siden.
+- Alle satser rettes ét sted øverst på Planlægning-siden.
 
 ## Datalagring
 

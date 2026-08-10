@@ -4,6 +4,7 @@ import {
   DEFAULT_SETTINGS,
   DEFAULT_PERIODS,
   defaultPlanningDays,
+  normalizeSettings,
 } from '@/lib/seed'
 
 /** Hele datasættet appen arbejder på. */
@@ -34,7 +35,10 @@ export class LocalStorageRepository implements Repository {
     const raw = localStorage.getItem(LS_KEY)
     if (raw) {
       try {
-        return JSON.parse(raw) as DataSet
+        const data = JSON.parse(raw) as DataSet
+        // Migrér data gemt før busstørrelserne blev indført.
+        data.settings = normalizeSettings(data.settings)
+        return data
       } catch {
         // falder igennem til standarddata
       }
@@ -115,10 +119,9 @@ export class SupabaseRepository implements Repository {
     }
 
     return {
-      settings: {
-        bus_price: settings.bus_price,
-        ticket_price: settings.ticket_price,
-      },
+      // normalizeSettings udfylder de nye bussatser med standardværdier,
+      // hvis databasen endnu ikke har fået kolonnerne (før migreringen).
+      settings: normalizeSettings(settings),
       periods,
       days,
     }

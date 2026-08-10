@@ -1,5 +1,6 @@
 import type { PlanningDay, Settings } from '@/types'
 import { calcDay } from './calc'
+import { selectBus, busPrice } from './buses'
 import { parseISO, isoWeek, monthName } from './format'
 
 export type Grouping = 'week' | 'month' | 'year'
@@ -84,7 +85,10 @@ export interface Forecast {
   avgTicketsPerRide: number
   /** Forventet samlet billetsalg for sæsonen. */
   projectedTickets: number
-  /** Forventet udgift for sæsonen (alle fælles kørsler). */
+  /**
+   * Forventet udgift for sæsonen (alle fælles kørsler). Busstørrelsen for
+   * dage uden billettal skønnes ud fra gennemsnitligt billetsalg.
+   */
   projectedExpenses: number
   /** Forventet indtægt ved nuværende billetpris. */
   projectedIncome: number
@@ -109,6 +113,10 @@ export function forecast(
   let enteredRides = 0
   let enteredTickets = 0
   let realizedTickets = 0
+  // Udgifter for dage hvor bussen kendes (fortid eller indtastede billetter).
+  let knownExpenses = 0
+  // Fremtidige fælles dage uden billettal – busstørrelsen må skønnes.
+  let unknownFutureDays = 0
 
   for (const day of days) {
     const c = calcDay(day, settings)
@@ -118,8 +126,11 @@ export function forecast(
     if (past) {
       realizedSharedDays++
       realizedTickets += c.ticketCount
+      knownExpenses += c.busExpense
     } else {
       remainingSharedDays++
+      if (c.ticketCount > 0) knownExpenses += c.busExpense
+      else unknownFutureDays++
     }
     // Grundlag for gennemsnit: alle fælles dage hvor der er indtastet billetter.
     if (c.ticketCount > 0) {
@@ -132,7 +143,13 @@ export function forecast(
   const avgTicketsPerRide = hasBasis ? enteredTickets / enteredRides : 0
   const projectedTickets =
     realizedTickets + remainingSharedDays * avgTicketsPerRide
-  const projectedExpenses = totalSharedDays * settings.bus_price
+  // Busstørrelsen (og dermed udgiften) afhænger af billettallet. For fremtidige
+  // dage uden billettal skønnes bussen ud fra gennemsnitligt billetsalg.
+  const estimatedBusPrice = busPrice(
+    selectBus(Math.round(avgTicketsPerRide)).key,
+    settings,
+  )
+  const projectedExpenses = knownExpenses + unknownFutureDays * estimatedBusPrice
   const projectedIncome = projectedTickets * settings.ticket_price
   const projectedResult = projectedExpenses - projectedIncome
   const deficit = projectedResult > 0
