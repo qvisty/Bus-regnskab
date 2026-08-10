@@ -19,20 +19,22 @@ Appen har fire sider:
 - **Busstørrelse** vælges automatisk som den mindste bus med plads til dagens
   samlede antal billetter:
 
-  | Bus           | Pladser | Pris pr. km | Pris pr. tur (standard) |
-  |---------------|--------:|------------:|------------------------:|
-  | Lille bus     | 19      | 10 kr.      | 2.430 kr.               |
-  | Stor bus      | 57      | 18 kr.      | 4.375 kr.               |
-  | Dobbeltdækker | 83      | 20 kr.      | 4.866 kr.               |
+  | Bus           | Pladser | Pris pr. km | Fast takst pr. tur |
+  |---------------|--------:|------------:|-------------------:|
+  | Lille bus     | 19      | 10 kr.      | 2.430 kr.          |
+  | Stor bus      | 57      | 18 kr.      | 4.375 kr.          |
+  | Dobbeltdækker | 83      | 20 kr.      | 4.866 kr.          |
 
-- **Busudgift** = den valgte busstørrelses pris pr. tur på dage med fælles
-  kørsel, ellers 0. Overstiger billettallet 83, markeres dagen som overbooket.
+- **Busudgift** = den valgte busstørrelses faste takst pr. tur på dage med
+  fælles kørsel, ellers 0. Taksterne tastes ikke i appen – de er defineret i
+  `src/lib/buses.ts` og rettes dér, hvis vognmanden ændrer priser.
+  Overstiger billettallet 83, markeres dagen som overbooket.
 - **Indtægt** = antal billetter × pris pr. billet (standard 65 kr.).
   Billetprisen er den samme uanset busstørrelse.
 - **Overskud** = indtægt − busudgift.
 - **Samlet pris (periode)** = udgifter − indtægter (negativ = overskud), delt med 3.
 - **Afregning ved periodeslut** = pris pr. skole − allerede løbende overført.
-- Alle satser rettes ét sted øverst på Planlægning-siden.
+- Billetprisen rettes ét sted øverst på Planlægning-siden.
 
 ## Datalagring
 

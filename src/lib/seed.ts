@@ -1,25 +1,22 @@
 import type { PlanningDay, Settings, Period } from '@/types'
 import seedDays from '@/data/planning_seed.json'
 
-/** Standardsatser – billetpris samt pris pr. tur for hver busstørrelse. */
+/** Standardsatser. Bustaksterne er faste og ligger i lib/buses.ts. */
 export const DEFAULT_SETTINGS: Settings = {
   ticket_price: 65,
-  bus_price_small: 2430,
-  bus_price_large: 4375,
-  bus_price_double: 4866,
 }
 
 /**
- * Udfyld manglende satser med standardværdier. Migrerer data gemt før
- * busstørrelserne blev indført (hvor der kun fandtes én samlet buspris).
+ * Udfyld manglende satser med standardværdier og smid ukendte felter væk
+ * (fx busprissatser fra tidligere versioner). Sikrer at satserne altid er
+ * gyldige tal, så beregningerne aldrig kan give NaN.
  */
 export function normalizeSettings(raw: Partial<Settings> | null): Settings {
+  const ticket = Number(raw?.ticket_price)
   return {
-    ticket_price: raw?.ticket_price ?? DEFAULT_SETTINGS.ticket_price,
-    bus_price_small: raw?.bus_price_small ?? DEFAULT_SETTINGS.bus_price_small,
-    bus_price_large: raw?.bus_price_large ?? DEFAULT_SETTINGS.bus_price_large,
-    bus_price_double:
-      raw?.bus_price_double ?? DEFAULT_SETTINGS.bus_price_double,
+    ticket_price: Number.isFinite(ticket)
+      ? ticket
+      : DEFAULT_SETTINGS.ticket_price,
   }
 }
 

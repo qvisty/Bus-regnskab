@@ -20,16 +20,11 @@ export interface PlanningDay {
 
 /**
  * Globale satser. Billetprisen er den samme uanset busstørrelse og rettes
- * ét sted. Busprisen er pr. tur og afhænger af den bestilte busstørrelse.
+ * ét sted. Busudgiften tastes ikke: den følger de faste takster pr.
+ * busstørrelse (se BUS_TYPES i lib/buses.ts) og vælges efter billettal.
  */
 export interface Settings {
   ticket_price: number
-  /** Pris pr. tur – lille bus (19 personer). */
-  bus_price_small: number
-  /** Pris pr. tur – stor bus (57 personer). */
-  bus_price_large: number
-  /** Pris pr. tur – dobbeltdækker (83 sæder). */
-  bus_price_double: number
 }
 
 /** En afregningsperiode – svarer til en kolonne i fanen "Afregning". */

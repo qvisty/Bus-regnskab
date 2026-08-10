@@ -2,12 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { aggregate, forecast } from './stats'
 import type { PlanningDay, Settings } from '@/types'
 
-const settings: Settings = {
-  ticket_price: 65,
-  bus_price_small: 2430,
-  bus_price_large: 4375,
-  bus_price_double: 4866,
-}
+const settings: Settings = { ticket_price: 65 }
 
 function day(over: Partial<PlanningDay>): PlanningDay {
   return {
