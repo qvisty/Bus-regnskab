@@ -1,8 +1,10 @@
-name: Deploy demo til GitHub Pages
+name: Deploy til GitHub Pages
 
-# Bygger den statiske demo-udgave (localStorage, ingen backend) og
-# udgiver den på GitHub Pages. Deployer kun fra main, så demoen følger
-# hovedbranchen. Kan også startes manuelt.
+# Bygger appen og udgiver den på GitHub Pages. Deployer kun fra main.
+#
+# Er repo-secrets VITE_SUPABASE_URL og VITE_SUPABASE_ANON_KEY sat, bygges
+# den rigtige udgave med delt data i Supabase ("● Delt"-badge). Mangler
+# de, bygges demo-udgaven i stedet (localStorage, "◐ Demo"-badge).
 on:
   push:
     branches: [main]
@@ -28,7 +30,12 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run build:demo
+      - run: npm run build:pages
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Uden Supabase-secrets bygges demo-udgaven.
+          VITE_DEMO: ${{ secrets.VITE_SUPABASE_URL == '' && 'true' || 'false' }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
