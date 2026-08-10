@@ -260,10 +260,23 @@ select:focus {
   box-shadow: var(--shadow);
 }
 /* Planlægningstabellen scroller internt, så kolonneoverskrifter (og
-   totalrækken) forbliver synlige i toppen/bunden. */
+   totalrækken) forbliver synlige i toppen/bunden. Den bryder ud af det
+   centrerede layout og bruger næsten hele skærmens bredde. */
 .table-wrap.planning-table {
-  max-height: 72vh;
+  max-height: 76vh;
   overflow: auto;
+  width: min(100vw - 40px, 1900px);
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+/* Bemærkningskolonnen (sidst) opsuger den ekstra bredde. */
+.planning-table td:last-child {
+  width: 99%;
+}
+.planning-table .cell-note {
+  width: 100%;
+  min-width: 160px;
 }
 table {
   border-collapse: collapse;
