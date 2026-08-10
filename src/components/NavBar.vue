@@ -1,5 +1,6 @@
 <script setup lang="ts">
 defineProps<{ mode: 'supabase' | 'local'; demo: boolean }>()
+defineEmits<{ lock: [] }>()
 </script>
 
 <template>
@@ -25,6 +26,13 @@ defineProps<{ mode: 'supabase' | 'local'; demo: boolean }>()
         <template v-else-if="mode === 'supabase'">● Delt (Supabase)</template>
         <template v-else>○ Lokal (denne browser)</template>
       </span>
+      <button
+        class="btn sm"
+        title="Lås appen igen i denne browser"
+        @click="$emit('lock')"
+      >
+        Log ud
+      </button>
     </div>
   </header>
 </template>

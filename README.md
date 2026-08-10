@@ -45,6 +45,14 @@ Appen virker i to tilstande:
 
 Den aktive tilstand vises som et badge øverst til højre.
 
+## Adgangskode
+
+Appen er låst bag en fælles adgangskode, som indtastes på forsiden. Adgangen
+huskes i browseren, og "Log ud"-knappen i menuen låser igen. Koden gemmes kun
+som SHA-256-hash i `src/lib/auth.ts` – skal koden skiftes, udskiftes hashen
+dér. Bemærk: låsen er klient-side og holder uvedkommende ude af appen, men er
+ikke et egentligt sikkerhedsværn mod tekniske angreb.
+
 ## Kom i gang lokalt
 
 ```bash
@@ -87,22 +95,22 @@ Projektet indeholder `vercel.json` og bygger som en almindelig Vite/Vue-SPA.
 
 Build-kommando: `npm run build`, output-mappe: `dist`.
 
-## Statisk demo på GitHub Pages
+## GitHub Pages
 
-En selvstændig demo-udgave (uden backend – al data ligger i browserens
-localStorage) bygges med:
+Workflowet [`.github/workflows/deploy-demo.yml`](.github/workflows/deploy-demo.yml)
+bygger og udgiver appen automatisk til GitHub Pages ved hvert push til `main`:
 
-```bash
-npm run build:demo
-```
+- Er repo-secrets **`VITE_SUPABASE_URL`** og **`VITE_SUPABASE_ANON_KEY`** sat
+  (*Settings → Secrets and variables → Actions*), bygges den **rigtige udgave
+  med delt data** i Supabase ("● Delt"-badge).
+- Mangler de, bygges en selvstændig **demo-udgave** i stedet (al data i
+  browserens localStorage, "◐ Demo"-badge og en nulstil-knap).
 
-Den bruger hash-routing og relative stier, så den kan ligge under et
-underbibliotek. Workflowet [`.github/workflows/deploy-demo.yml`](.github/workflows/deploy-demo.yml)
-bygger og udgiver den automatisk til GitHub Pages.
+Builden bruger relative stier, så den kan ligge under et underbibliotek.
+Demo-udgaven kan også bygges manuelt med `npm run build:demo`.
 
 **Engangsopsætning:** I repoets *Settings → Pages* sættes **Source** til
-**GitHub Actions**. Demoen vises derefter med et tydeligt "Demo"-badge og en
-knap til at nulstille data – ændringer deles ikke og påvirker ikke produktion.
+**GitHub Actions**.
 
 ## Teknologi
 
