@@ -18,10 +18,18 @@ export interface PlanningDay {
   ee_transferred_date: string | null
 }
 
-/** Globale satser – svarer til "Pris pr. kørsel" og "Pris pr. billet". */
+/**
+ * Globale satser. Billetprisen er den samme uanset busstørrelse og rettes
+ * ét sted. Busprisen er pr. tur og afhænger af den bestilte busstørrelse.
+ */
 export interface Settings {
-  bus_price: number
   ticket_price: number
+  /** Pris pr. tur – lille bus (19 personer). */
+  bus_price_small: number
+  /** Pris pr. tur – stor bus (57 personer). */
+  bus_price_large: number
+  /** Pris pr. tur – dobbeltdækker (83 sæder). */
+  bus_price_double: number
 }
 
 /** En afregningsperiode – svarer til en kolonne i fanen "Afregning". */

@@ -2,7 +2,12 @@ import { describe, it, expect } from 'vitest'
 import { aggregate, forecast } from './stats'
 import type { PlanningDay, Settings } from '@/types'
 
-const settings: Settings = { bus_price: 3000, ticket_price: 65 }
+const settings: Settings = {
+  ticket_price: 65,
+  bus_price_small: 2430,
+  bus_price_large: 4375,
+  bus_price_double: 4866,
+}
 
 function day(over: Partial<PlanningDay>): PlanningDay {
   return {
@@ -33,11 +38,14 @@ describe('aggregate – gruppering pr. måned', () => {
     const b = aggregate(days, settings, 'month')
     expect(b).toHaveLength(2)
     expect(b[0].key).toBe('2026-09')
-    expect(b[0].expenses).toBe(6000)
+    // Begge september-dage klares med den lille bus (10 hhv. 0 billetter).
+    expect(b[0].expenses).toBe(2 * 2430)
     expect(b[0].income).toBe(650)
     expect(b[0].tickets).toBe(10)
     expect(b[0].sharedDays).toBe(2)
     expect(b[1].key).toBe('2026-10')
+    // Oktober-dagen har 20 billetter og kræver den store bus.
+    expect(b[1].expenses).toBe(4375)
     expect(b[1].income).toBe(1300)
     expect(b[1].sharedDays).toBe(1)
   })
@@ -59,20 +67,21 @@ describe('forecast – billetpris-anbefaling', () => {
     expect(f.remainingSharedDays).toBe(4)
     expect(f.avgTicketsPerRide).toBe(30)
     expect(f.projectedTickets).toBe(120)
-    expect(f.projectedExpenses).toBe(12000)
+    // 30 billetter/kørsel kræver den store bus: 2 kendte + 2 skønnede dage.
+    expect(f.projectedExpenses).toBe(4 * 4375)
     expect(f.projectedIncome).toBe(7800)
-    expect(f.projectedResult).toBe(4200)
+    expect(f.projectedResult).toBe(4 * 4375 - 7800)
     expect(f.deficit).toBe(true)
   })
 
   it('anbefaler en billetpris der får sæsonen til at gå i nul', () => {
     const f = forecast(days, settings, today)
-    // 12000 udgift / 120 billetter = 100 kr.
-    expect(f.recommendedPrice).toBe(100)
+    // 17500 udgift / 120 billetter = 145,83 -> rundes op til 146 kr.
+    expect(f.recommendedPrice).toBe(146)
   })
 
   it('anbefaler ingen prisstigning når prognosen går i plus', () => {
-    const f = forecast(days, { bus_price: 3000, ticket_price: 120 }, today)
+    const f = forecast(days, { ...settings, ticket_price: 150 }, today)
     expect(f.deficit).toBe(false)
     expect(f.recommendedPrice).toBeNull()
   })

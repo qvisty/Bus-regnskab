@@ -1,4 +1,5 @@
 import type { PlanningDay, Settings, Period } from '@/types'
+import { selectBus, busPrice, MAX_SEATS, type BusKey } from './buses'
 
 /**
  * Beregnede værdier for en planlægningsdag.
@@ -9,9 +10,15 @@ export interface DayCalc {
   needCount: number
   /** "Fælles kørsel" = sandt hvis mere end én skole har behov. */
   shared: boolean
-  /** "Bus-model" – "Stor" ved fælles kørsel, ellers tom. */
+  /** Busstørrelse valgt efter billettal ved fælles kørsel, ellers null. */
+  busKey: BusKey | null
+  /** "Bus-model" – navnet på den valgte bus ved fælles kørsel, ellers tom. */
   busModel: string
-  /** "Busudgift" – buspris ved fælles kørsel, ellers 0. */
+  /** Antal pladser i den valgte bus, 0 uden fælles kørsel. */
+  busSeats: number
+  /** Sandt hvis billettallet overstiger den største bus (83 sæder). */
+  busOverflow: boolean
+  /** "Busudgift" – den valgte busstørrelses pris pr. tur, ellers 0. */
   busExpense: number
   /** "Antal billetter" – sum af de tre skolers billetter. */
   ticketCount: number
@@ -29,13 +36,14 @@ export function calcDay(day: PlanningDay, settings: Settings): DayCalc {
   const needCount =
     (day.he_need ? 1 : 0) + (day.hd_need ? 1 : 0) + (day.ee_need ? 1 : 0)
   const shared = needCount > 1
-  const busModel = shared ? 'Stor' : ''
-  const busExpense = shared ? settings.bus_price : 0
   // Billetter, indtægt og udgift tæller kun på dage med fælles kørsel.
   // Er det ikke en fælles dag, deles der intet mellem skolerne.
   const ticketCount = shared
     ? (day.he_tickets || 0) + (day.hd_tickets || 0) + (day.ee_tickets || 0)
     : 0
+  // Busstørrelsen vælges automatisk: mindste bus med plads til alle billetter.
+  const bus = shared ? selectBus(ticketCount) : null
+  const busExpense = bus ? busPrice(bus.key, settings) : 0
   const income = shared ? ticketCount * settings.ticket_price : 0
   const profit = income - busExpense
   const hdMissing =
@@ -45,7 +53,10 @@ export function calcDay(day: PlanningDay, settings: Settings): DayCalc {
   return {
     needCount,
     shared,
-    busModel,
+    busKey: bus ? bus.key : null,
+    busModel: bus ? bus.name : '',
+    busSeats: bus ? bus.seats : 0,
+    busOverflow: shared && ticketCount > MAX_SEATS,
     busExpense,
     ticketCount,
     income,
@@ -144,9 +155,13 @@ export function calcTotals(days: PlanningDay[], settings: Settings) {
   let eeNeed = 0
   let hdMissing = 0
   let eeMissing = 0
+  let overflowDays = 0
+  const busDays: Record<BusKey, number> = { small: 0, large: 0, double: 0 }
   for (const day of days) {
     const c = calcDay(day, settings)
     busExpense += c.busExpense
+    if (c.busKey) busDays[c.busKey]++
+    if (c.busOverflow) overflowDays++
     income += c.income
     ticketCount += c.ticketCount
     // Billetter tæller kun på fælles dage (samme regel som indtægt).
@@ -176,5 +191,7 @@ export function calcTotals(days: PlanningDay[], settings: Settings) {
     eeNeed,
     hdMissing,
     eeMissing,
+    busDays,
+    overflowDays,
   }
 }

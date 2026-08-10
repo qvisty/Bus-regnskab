@@ -40,6 +40,18 @@ const seasonEnd = computed(
 
 const missingTotal = computed(() => totals.value.hdMissing + totals.value.eeMissing)
 
+// Fordeling af busstørrelser, fx "12× lille · 3× stor".
+const busMixLabel = computed(() => {
+  const b = totals.value.busDays
+  return [
+    b.small ? `${b.small}× lille` : '',
+    b.large ? `${b.large}× stor` : '',
+    b.double ? `${b.double}× dobbeltdækker` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
+})
+
 const fc = computed(() =>
   forecast(store.days.value, store.settings.value, today),
 )
@@ -63,6 +75,13 @@ const fc = computed(() =>
     <div class="stat">
       <div class="label">Busudgift</div>
       <div class="value">{{ money(totals.busExpense) }}</div>
+      <div
+        v-if="busMixLabel"
+        class="label"
+        style="margin-top: 4px; text-transform: none"
+      >
+        {{ busMixLabel }}
+      </div>
     </div>
     <div class="stat">
       <div class="label">Indtægt</div>

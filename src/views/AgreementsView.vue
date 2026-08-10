@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { money } from '@/lib/format'
+import { BUS_TYPES, busPrice } from '@/lib/buses'
+import { useStore } from '@/store'
+
+const store = useStore()
 
 const examples = [
   { label: 'Eksempel 1 – underskud', expenses: 180000, income: 150000 },
@@ -20,6 +24,37 @@ const examples = [
   <div class="card agreement">
     <h3>1. Booking og betaling</h3>
     <p>HE booker og betaler busserne for al fælles weekendkørsel.</p>
+
+    <h3>1a. Busstørrelser og priser</h3>
+    <p>
+      Busstørrelsen vælges automatisk til hver kørsel som den mindste bus med
+      plads til dagens samlede antal bestilte billetter, og der afregnes med
+      den valgte busstørrelses pris pr. tur:
+    </p>
+    <div class="table-wrap example-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Bus</th>
+            <th class="num">Pladser</th>
+            <th class="num">Pris pr. km</th>
+            <th class="num">Pris pr. tur</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="b in BUS_TYPES" :key="b.key">
+            <td>{{ b.name }}</td>
+            <td class="num">{{ b.seats }}</td>
+            <td class="num">{{ money(b.pricePerKm) }}</td>
+            <td class="num">{{ money(busPrice(b.key, store.settings.value)) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Prisen pr. billet er den samme for eleverne uanset hvilken bus der
+      bestilles.
+    </p>
 
     <h3>2. Løbende overførsler</h3>
     <p>
@@ -102,7 +137,9 @@ const examples = [
     <h3>Bemærkning om beregningen</h3>
     <p>
       I afregningen er indtægten lig med antal solgte billetter gange prisen pr.
-      billet. Udgiften er prisen pr. kørsel for de datoer, hvor der køres. Begge
+      billet – billetprisen er den samme uanset busstørrelse. Udgiften er den
+      valgte busstørrelses pris pr. tur for de datoer, hvor der køres;
+      busstørrelsen vælges automatisk efter dagens samlede billettal. Alle
       satser står øverst i fanen Planlægning og kan rettes ét sted.
     </p>
   </div>

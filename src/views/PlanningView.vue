@@ -25,19 +25,17 @@ function exportCsv() {
 }
 
 // Lokale satser bundet til input-felterne.
-const busPrice = computed({
-  get: () => store.settings.value.bus_price,
-  set: (v: number) =>
-    store.updateSettings({ ...store.settings.value, bus_price: Number(v) || 0 }),
-})
-const ticketPrice = computed({
-  get: () => store.settings.value.ticket_price,
-  set: (v: number) =>
-    store.updateSettings({
-      ...store.settings.value,
-      ticket_price: Number(v) || 0,
-    }),
-})
+function priceField(key: 'ticket_price' | 'bus_price_small' | 'bus_price_large' | 'bus_price_double') {
+  return computed({
+    get: () => store.settings.value[key],
+    set: (v: number) =>
+      store.updateSettings({ ...store.settings.value, [key]: Number(v) || 0 }),
+  })
+}
+const ticketPrice = priceField('ticket_price')
+const busPriceSmall = priceField('bus_price_small')
+const busPriceLarge = priceField('bus_price_large')
+const busPriceDouble = priceField('bus_price_double')
 
 // Tilgængelige måneder til filteret (i datorækkefølge).
 const months = computed(() => {
@@ -86,6 +84,25 @@ const missingDays = computed(() => {
   return { hd, ee }
 })
 
+// Datoer med flere billetter end den største bus kan rumme.
+const overflowDays = computed(() =>
+  sortedDays.value.filter(
+    (d) => calcDay(d, store.settings.value).busOverflow,
+  ).map((d) => d.date),
+)
+
+// Fordeling af busstørrelser, fx "12× lille · 3× stor".
+const busMixLabel = computed(() => {
+  const b = totals.value.busDays
+  return [
+    b.small ? `${b.small}× lille` : '',
+    b.large ? `${b.large}× stor` : '',
+    b.double ? `${b.double}× dobbeltdækker` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
+})
+
 function fmtDays(dates: string[]): string {
   return dates.map((d) => `${weekdayShort(d)} ${dateShort(d)}`).join(', ')
 }
@@ -103,8 +120,10 @@ function isMonthStart(date: string, index: number): boolean {
     <p>
       Hver dato har sin egen række. Sæt flueben ved skolernes behov. Først når
       mindst to skoler har behov samme dag, bliver det en fælles kørsel – og så
-      vises felterne til billetter og overførsler. Kun fælles dage medregnes i
-      udgift, indtægt og overskud.
+      vises felterne til billetter og overførsler. Busstørrelsen vælges
+      automatisk som den mindste bus med plads til dagens samlede antal
+      billetter, og busudgiften følger med. Kun fælles dage medregnes i udgift,
+      indtægt og overskud.
     </p>
   </div>
 
@@ -112,15 +131,25 @@ function isMonthStart(date: string, index: number): boolean {
   <div class="card" style="margin-bottom: 18px">
     <div class="toolbar" style="margin-bottom: 0">
       <label class="field">
-        Pris pr. kørsel (udgift)
-        <input type="number" v-model.number="busPrice" min="0" step="50" />
-      </label>
-      <label class="field">
         Pris pr. billet (indtægt)
         <input type="number" v-model.number="ticketPrice" min="0" step="5" />
       </label>
+      <label class="field">
+        Lille bus, 19 pers. (pr. tur)
+        <input type="number" v-model.number="busPriceSmall" min="0" step="50" />
+      </label>
+      <label class="field">
+        Stor bus, 57 pers. (pr. tur)
+        <input type="number" v-model.number="busPriceLarge" min="0" step="50" />
+      </label>
+      <label class="field">
+        Dobbeltdækker, 83 sæder (pr. tur)
+        <input type="number" v-model.number="busPriceDouble" min="0" step="50" />
+      </label>
       <span class="muted" style="align-self: flex-end; padding-bottom: 8px">
-        Satserne rettes ét sted og slår igennem alle beregninger.
+        Satserne rettes ét sted og slår igennem alle beregninger. Billetprisen
+        er den samme uanset busstørrelse – bussen vælges automatisk efter
+        antal billetter.
       </span>
     </div>
   </div>
@@ -134,6 +163,13 @@ function isMonthStart(date: string, index: number): boolean {
     <div class="stat">
       <div class="label">Busudgift</div>
       <div class="value">{{ money(totals.busExpense) }}</div>
+      <div
+        v-if="busMixLabel"
+        class="label"
+        style="margin-top: 4px; text-transform: none"
+      >
+        {{ busMixLabel }}
+      </div>
     </div>
     <div class="stat">
       <div class="label">Indtægt ({{ totals.ticketCount }} billetter)</div>
@@ -145,6 +181,12 @@ function isMonthStart(date: string, index: number): boolean {
         {{ money(totals.profit) }}
       </div>
     </div>
+  </div>
+
+  <div v-if="overflowDays.length" class="banner warn">
+    <strong>Overbooket</strong> – flere billetter end den største bus (83
+    sæder) kan rumme: {{ fmtDays(overflowDays) }}. Overvej at dele kørslen
+    eller bestille en ekstra bus.
   </div>
 
   <div
@@ -225,6 +267,7 @@ function isMonthStart(date: string, index: number): boolean {
           <th title="HD har behov">HD</th>
           <th title="EE har behov">EE</th>
           <th>Fælles</th>
+          <th title="Busstørrelse valgt efter antal billetter">Bus</th>
           <th class="num">HE bill.</th>
           <th class="num">HD bill.</th>
           <th class="num">EE bill.</th>
@@ -253,6 +296,7 @@ function isMonthStart(date: string, index: number): boolean {
           <td>{{ totals.hdNeed }}</td>
           <td>{{ totals.eeNeed }}</td>
           <td>{{ totals.sharedDays }}</td>
+          <td></td>
           <td class="num">{{ totals.heTickets }}</td>
           <td class="num">{{ totals.hdTickets }}</td>
           <td class="num">{{ totals.eeTickets }}</td>
