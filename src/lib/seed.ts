@@ -3,7 +3,7 @@ import seedDays from '@/data/planning_seed.json'
 
 /** Standardsatser. Bustaksterne er faste og ligger i lib/buses.ts. */
 export const DEFAULT_SETTINGS: Settings = {
-  ticket_price: 65,
+  ticket_price: 75,
 }
 
 /**

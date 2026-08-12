@@ -23,7 +23,7 @@ const state = reactive<State>({
   loaded: false,
   loading: false,
   error: null,
-  settings: { ticket_price: 65 },
+  settings: { ticket_price: 75 },
   periods: [],
   days: [],
   mode: repo.mode,
