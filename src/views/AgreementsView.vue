@@ -62,7 +62,7 @@ const examples = [
     <h3>3. Opkrævning hos eleverne</h3>
     <p>
       Hver skole opkræver selv betaling hos sine egne elever. Prisen pr. billet
-      er 65 kr.
+      er 75 kr.
     </p>
 
     <h3>4. Afregning ved periodeafslutning</h3>

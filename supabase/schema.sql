@@ -8,7 +8,7 @@
 -- src/lib/buses.ts) og vælges automatisk efter billettal.
 create table if not exists public.settings (
   id integer primary key default 1,
-  ticket_price numeric not null default 65,
+  ticket_price numeric not null default 75,
   constraint settings_singleton check (id = 1)
 );
 

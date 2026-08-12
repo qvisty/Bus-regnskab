@@ -29,7 +29,7 @@ Appen har fire sider:
   fælles kørsel, ellers 0. Taksterne tastes ikke i appen – de er defineret i
   `src/lib/buses.ts` og rettes dér, hvis vognmanden ændrer priser.
   Overstiger billettallet 83, markeres dagen som overbooket.
-- **Indtægt** = antal billetter × pris pr. billet (standard 65 kr.).
+- **Indtægt** = antal billetter × pris pr. billet (standard 75 kr.).
   Billetprisen er den samme uanset busstørrelse.
 - **Overskud** = indtægt − busudgift.
 - **Samlet pris (periode)** = udgifter − indtægter (negativ = overskud), delt med 3.
